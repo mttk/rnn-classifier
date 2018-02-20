@@ -20,7 +20,7 @@ def make_parser():
   parser.add_argument('--hidden', type=int, default=500,
                         help='number of hidden units for the RNN encoder')
   parser.add_argument('--nlayers', type=int, default=2,
-                        help='number of layers of the LSTM encoder')
+                        help='number of layers of the RNN encoder')
   parser.add_argument('--lr', type=float, default=1e-3,
                         help='initial learning rate')
   parser.add_argument('--clip', type=float, default=5,

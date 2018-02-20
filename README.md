@@ -17,7 +17,7 @@ Inspired by @Keon's [barebone seq2seq implementation](https://github.com/keon/se
   --model MODEL      type of recurrent net [LSTM, GRU]
   --emsize EMSIZE    size of word embeddings [Uses pretrained on 50, 100, 200, 300]
   --hidden HIDDEN    number of hidden units for the RNN encoder
-  --nlayers NLAYERS  number of layers of the LSTM encoder
+  --nlayers NLAYERS  number of layers of the RNN encoder
   --lr LR            initial learning rate
   --clip CLIP        gradient clipping
   --epochs EPOCHS    upper epoch limit
