@@ -91,7 +91,7 @@ def train(model, data, optimizer, criterion, args):
 
 def evaluate(model, data, optimizer, criterion, args, type='Valid'):
   model.eval()
-  accuracy, confusion_matrix = 0., np.zeros((args.nlabels, args.nlabels), dtype=int)
+  accuracy, confusion_matrix = 0, np.zeros((args.nlabels, args.nlabels), dtype=int)
   t = time.time()
   total_loss = 0
   with torch.no_grad():
