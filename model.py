@@ -32,7 +32,6 @@ class Attention(nn.Module):
 
     # Here we assume q_dim == k_dim (dot product attention)
 
-    T, B, _ = keys.size()
     query = query.unsqueeze(1) # [BxQ] -> [Bx1xQ]
     keys = keys.transpose(0,1).transpose(1,2) # [TxBxK] -> [BxKxT]
     energy = torch.bmm(query, keys) # [Bx1xQ]x[BxKxT] -> [Bx1xT]
