@@ -13,7 +13,7 @@ Inspired by @Keon's [barebone seq2seq implementation](https://github.com/keon/se
 #### Arguments:
 
 ```
-  --data DATA        Data corpus: [SST, TREC, IMDB]
+  --data DATA        Corpus: [SST, TREC, IMDB]
   --model MODEL      type of recurrent net [LSTM, GRU]
   --emsize EMSIZE    size of word embeddings [Uses pretrained on 50, 100, 200, 300]
   --hidden HIDDEN    number of hidden units for the RNN encoder
