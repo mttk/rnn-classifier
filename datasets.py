@@ -54,14 +54,14 @@ dataset_map = {
 
 
 if __name__ == '__main__':
-  tr, val, te, T, L = make_sst(20)
+  (tr, val, te), T, L = make_sst(20)
   print("[SST] vocab: {} labels: {}".format(len(T.vocab), len(L.vocab)))
   print("[SST] train: {} val: {} test {}".format(len(tr.dataset), len(val.dataset), len(te.dataset)))
 
-  tr, te, T, L = make_imdb(20)
+  (tr, te), T, L = make_imdb(20)
   print("[IMDB] vocab: {} labels: {}".format(len(T.vocab), len(L.vocab)))
   print("[IMDB] train: {} test {}".format(len(tr.dataset), len(te.dataset)))
 
-  tr, te, T, L = make_trec(20)
+  (tr, te), T, L = make_trec(20)
   print("[TREC] vocab: {} labels: {}".format(len(T.vocab), len(L.vocab)))
   print("[TREC] train: {} test {}".format(len(tr.dataset), len(te.dataset)))
