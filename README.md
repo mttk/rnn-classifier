@@ -16,8 +16,8 @@ Inspired by @Keon's [barebone seq2seq implementation](https://github.com/keon/se
   --data DATA        Data corpus: [SST, TREC, IMDB]
   --model MODEL      type of recurrent net [LSTM, GRU]
   --emsize EMSIZE    size of word embeddings [Uses pretrained on 50, 100, 200, 300]
-  --hidden HIDDEN    number of hidden units for the reader
-  --nlayers NLAYERS  number of layers
+  --hidden HIDDEN    number of hidden units for the RNN encoder
+  --nlayers NLAYERS  number of layers of the LSTM encoder
   --lr LR            initial learning rate
   --clip CLIP        gradient clipping
   --epochs EPOCHS    upper epoch limit
