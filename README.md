@@ -32,7 +32,7 @@ A sample set of arguments can be viewed in `run.sh`.
 
 #### Results 
 
-Performance on test set after 5 epochs of the model with sample params:
+Accuracy on test set after 5 epochs of the model with sample params:
 
 |               |    SST    |    TREC   |    IMDB   |
 | ------------- |:---------:|:---------:|:---------:|
