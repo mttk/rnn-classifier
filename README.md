@@ -32,8 +32,8 @@ A sample set of arguments can be viewed in `run.sh`.
 
 #### Results 
 
-Model after 5 epochs with sample params:
+Performance on test set after 5 epochs of the model with sample params:
 
-| Model\\Dataset|    SST    |    TREC   |    IMDB   |
+|               |    SST    |    TREC   |    IMDB   |
 | ------------- |:---------:|:---------:|:---------:|
 | `run.sh`      |  80.340%  |  87.000%  |  86.240%  |
