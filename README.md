@@ -28,4 +28,12 @@ Inspired by @Keon's [barebone seq2seq implementation](https://github.com/keon/se
   --fine             use fine grained labels in SST # currently unused
 ```
 
-A sample set of arguments can be viewed in `run.sh`, while the algorithm can be easily ran by `./run.sh`.
+A sample set of arguments can be viewed in `run.sh`.
+
+#### Results 
+
+Model after 5 epochs with sample params:
+
+| Model\\Dataset|    SST    |    TREC   |    IMDB   |
+| ------------- |:---------:|:---------:|:---------:|
+| `run.sh`      |  80.340%  |  87.000%  |  86.240%  |
