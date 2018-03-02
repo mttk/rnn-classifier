@@ -12,8 +12,8 @@ def make_sst(batch_size, device=-1, fine_grained=False, vectors=None):
                                          filter_pred=filter_pred
                                          )
 
-  TEXT.build_vocab(train, vectors=vectors)
-  LABEL.build_vocab(train)
+  TEXT.build_vocab(train, test, valid, vectors=vectors)
+  LABEL.build_vocab(train, test, valid)
   train_iter, val_iter, test_iter = data.BucketIterator.splits(
               (train, val, test), batch_size=batch_size, device=device, repeat=False)
 
@@ -25,8 +25,8 @@ def make_imdb(batch_size, device=-1, vectors=None):
   LABEL = data.LabelField()
   train, test = datasets.IMDB.splits(TEXT, LABEL)
 
-  TEXT.build_vocab(train, vectors=vectors, max_size=30000) 
-  LABEL.build_vocab(train)
+  TEXT.build_vocab(train, test, valid, vectors=vectors, max_size=30000) 
+  LABEL.build_vocab(train, test, valid)
   train_iter, test_iter = data.BucketIterator.splits(
               (train, test), batch_size=batch_size, device=device, repeat=False)
 
@@ -38,8 +38,8 @@ def make_trec(batch_size, device=-1, vectors=None):
   LABEL = data.LabelField()
   train, test = datasets.TREC.splits(TEXT, LABEL)
 
-  TEXT.build_vocab(train, vectors=vectors)
-  LABEL.build_vocab(train)
+  TEXT.build_vocab(train, test, valid, vectors=vectors)
+  LABEL.build_vocab(train, test, valid)
   train_iter, test_iter = data.BucketIterator.splits(
               (train, test), batch_size=batch_size, device=device, repeat=False)
 
