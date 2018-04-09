@@ -149,7 +149,7 @@ def main():
   ntokens, nlabels = len(TEXT.vocab), len(LABEL.vocab)
   args.nlabels = nlabels # hack to not clutter function arguments
 
-  embedding = nn.Embedding(ntokens, args.emsize, padding_idx=0, max_norm=1)
+  embedding = nn.Embedding(ntokens, args.emsize, padding_idx=1, max_norm=1)
   if vectors: embedding.weight.data.copy_(TEXT.vocab.vectors)
   encoder = Encoder(args.emsize, args.hidden, nlayers=args.nlayers, 
                     dropout=args.drop, bidirectional=args.bi, rnn_type=args.model)
