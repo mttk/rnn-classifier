@@ -74,7 +74,7 @@ def train(model, data, optimizer, criterion, args):
     total_loss += float(loss)
     accuracy, confusion_matrix = update_stats(accuracy, confusion_matrix, logits, y)
     loss.backward()
-    torch.nn.utils.clip_grad_norm(model.parameters(), args.clip)
+    torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
     optimizer.step()
 
     print("[Batch]: {}/{} in {:.5f} seconds".format(
@@ -120,7 +120,8 @@ def load_pretrained_vectors(dim):
     # Check torchtext.datasets.vocab line #383
     # for other pretrained vectors. 6B used here
     # for simplicity
-    return GloVe(name='6B', dim=dim)
+    name = 'glove.{}.{}d'.format('6B', str(dim))
+    return name
   return None
 
 def main():
