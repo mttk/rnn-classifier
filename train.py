@@ -129,9 +129,8 @@ def main():
   print("[Model hyperparams]: {}".format(str(args)))
 
   cuda = torch.cuda.is_available() and args.cuda
-  device = -1 if not cuda else 0
+  device = torch.device("cpu") if not cuda else torch.device("cuda:0")
   seed_everything(seed=1337, cuda=cuda)
-
   vectors = load_pretrained_vectors(args.emsize)
 
   # Load dataset iterators
@@ -159,9 +158,7 @@ def main():
   attention = Attention(attention_dim, attention_dim, attention_dim)
 
   model = Classifier(embedding, encoder, attention, attention_dim, nlabels)
-
-  if cuda:
-    model.cuda()
+  model.to(device)
 
   criterion = nn.CrossEntropyLoss()
   optimizer = torch.optim.Adam(model.parameters(), args.lr, amsgrad=True)
