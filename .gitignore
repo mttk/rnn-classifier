@@ -1,4 +1,9 @@
 # Data files
-.data/*
+/.data
+/.vector_cache
+
+# IDE configs
 /.idea
+
+# Python Caches
 __pycache__/*
