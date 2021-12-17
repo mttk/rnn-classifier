@@ -1,5 +1,3 @@
-import torch
-from simple_chalk import chalk
 from torch.nn import Embedding
 from typing import List, Any, Dict
 from pathlib import Path
@@ -53,7 +51,7 @@ def save_state(
 
 def make_parser():
     parser = argparse.ArgumentParser(description='PyTorch RNN Classifier w/ attention')
-    parser.add_argument('--data', type=str, default='SST',
+    parser.add_argument('--data', type=str, default='IMDB',
                         help='Data corpus: [SST, TREC, IMDB]')
     parser.add_argument('--model', type=str, default='LSTM',
                         help='type of recurrent net [LSTM, GRU]')
