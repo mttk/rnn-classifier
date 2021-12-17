@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-RNNS = ['LSTM', 'GRU']
+rnn_options = ['LSTM', 'GRU']
 
 
 class Encoder(nn.Module):
@@ -11,7 +11,7 @@ class Encoder(nn.Module):
                  bidirectional=True, rnn_type='GRU'):
         super(Encoder, self).__init__()
         self.bidirectional = bidirectional
-        assert rnn_type in RNNS, 'Use one of the following: {}'.format(str(RNNS))
+        assert rnn_type in rnn_options, 'Use one of the following: {}'.format(str(rnn_options))
         rnn_cell = getattr(nn, rnn_type)  # fetch constructor from torch.nn, cleaner than if
         self.rnn = rnn_cell(embedding_dim, hidden_dim, nlayers,
                             dropout=dropout, bidirectional=bidirectional)
@@ -72,5 +72,5 @@ class Classifier(nn.Module):
         # linear_combination = torch.mean(outputs, 0)
 
         energy, linear_combination = self.attention(hidden, outputs, outputs)
-        logits = self.decoder(linear_combination)
-        return logits, energy
+        logit = self.decoder(linear_combination)
+        return logit, energy
