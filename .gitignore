@@ -1,4 +1,4 @@
 # Data files
 .data/*
-
+/.idea
 __pycache__/*
