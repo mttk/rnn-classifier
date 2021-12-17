@@ -39,6 +39,8 @@ def save_state(
     cur_epoch_folder = result_folder / "epoch-{}".format(epoch_num)
 
     # Make the result folder.
+    if not result_folder.exists():
+        os.mkdir(result_folder)
     os.mkdir(cur_epoch_folder)
 
     # Save the report and model to the current epoch folder.
@@ -89,7 +91,7 @@ if __name__ == "__main__":
 
     # Decide the platform to run.
     cuda = torch.cuda.is_available() and args.cuda
-    report_path = args.output_path
+    report_path = Path(args.output_path)
     device = torch.device("cpu") if not cuda else torch.device("cuda:0")
     seed_everything(seed=1337, use_gpu=cuda)
     vectors = load_pretrained_vectors(args.emsize)

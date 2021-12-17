@@ -49,7 +49,7 @@ def train_an_epoch(
     epoch_loss, epoch_acc = total_loss / len(data), correct_predictions / len(data.dataset) * 100
     time_elapsed = time.time() - t
 
-    print(f'{chalk.bold("TRAINING --->")} '
+    print(f'{chalk.bold("TRAINING   --->")} '
           f'{chalk.bold.greenBright("[EPOCH-{}]".format(epoch_num))} '
           f'{chalk.bold("TIME ELAPSED:")} {"{:.2f}s".format(time_elapsed)} '
           f'{chalk.bold.redBright("LOSS:")} {"{:.5f}".format(epoch_loss)} '
@@ -57,10 +57,10 @@ def train_an_epoch(
 
     return {
         "epoch_num": epoch_num,
-        "epoch_loss:": epoch_loss,
+        "epoch_loss:": epoch_loss.item(),
         "epoch_acc": epoch_acc,
         "time_elapsed": time_elapsed,
-        "confusion_matrix": confusion_matrix
+        "confusion_matrix": confusion_matrix.tolist()
     }
 
 
@@ -87,7 +87,7 @@ def evaluate_an_epoch(
     epoch_loss, epoch_acc = total_loss / len(data), correct_predictions / len(data.dataset) * 100
     time_elapsed = time.time() - t
 
-    print(f'{chalk.bold("VALIDATION: --->")} '
+    print(f'{chalk.bold("VALIDATION --->")} '
           f'{chalk.bold.greenBright("[EPOCH-{}]".format(epoch_num))} '
           f'{chalk.bold("TIME ELAPSED:")} {"{:.2f}s".format(time_elapsed)} '
           f'{chalk.bold.redBright("LOSS:")} {"{:.5f}".format(epoch_loss)} '
@@ -95,8 +95,8 @@ def evaluate_an_epoch(
 
     return {
         "epoch_num": epoch_num,
-        "epoch_loss:": epoch_loss,
+        "epoch_loss": epoch_loss.item(),
         "epoch_acc": epoch_acc,
         "time_elapsed": time_elapsed,
-        "confusion_matrix": confusion_matrix
+        "confusion_matrix": confusion_matrix.tolist()
     }
