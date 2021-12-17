@@ -1,7 +1,12 @@
+import torch
 from simple_chalk import chalk
 from torch.nn import Embedding
+from typing import List, Any, Dict
+from pathlib import Path
 from model import *
 from train import *
+import os
+import json
 from datasets import dataset_map
 
 pretrained_GloVe_sizes = [50, 100, 200, 300]
@@ -23,6 +28,25 @@ def load_pretrained_vectors(dim):
         name = 'glove.{}.{}d'.format('6B', str(dim))
         return name
     return None
+
+
+def save_state(
+        report: List[Dict[str, Any]],
+        epoch_num: int,
+        m: Module,
+        result_folder: Path
+) -> None:
+    cur_epoch_folder = result_folder / "epoch-{}".format(epoch_num)
+
+    # Make the result folder.
+    os.mkdir(cur_epoch_folder)
+
+    # Save the report and model to the current epoch folder.
+    with open(cur_epoch_folder / "report.json", 'w') as r:
+        json.dump(report, r, indent=4)
+
+    # Save the model
+    torch.save(m.state_dict(), cur_epoch_folder / "model.pt")
 
 
 def make_parser():
@@ -53,6 +77,8 @@ def make_parser():
                         help='[DONT] use CUDA')
     parser.add_argument('--fine', action='store_true',
                         help='use fine grained labels in SST')
+    parser.add_argument('--output_path', type=str, default='report',
+                        help='Output directory.')
     return parser
 
 
@@ -63,6 +89,7 @@ if __name__ == "__main__":
 
     # Decide the platform to run.
     cuda = torch.cuda.is_available() and args.cuda
+    report_path = args.output_path
     device = torch.device("cpu") if not cuda else torch.device("cuda:0")
     seed_everything(seed=1337, use_gpu=cuda)
     vectors = load_pretrained_vectors(args.emsize)
@@ -109,16 +136,15 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     training_optimizer = torch.optim.Adam(model.parameters(), args.lr, amsgrad=True)
 
-    try:
-        best_valid_loss = None
+    # Start training.
+    training_report: List[Dict[str, Any]] = list()
+    for epoch in range(1, args.epochs + 1):
+        training_result = train_an_epoch(model, train_iter, training_optimizer, criterion, args, epoch)
+        val_result = evaluate_an_epoch(model, val_iter, criterion, args, epoch)
+        training_report.append({
+            "train": training_result,
+            "validation": val_result
+        })
+        save_state(training_report, epoch, model, report_path)
 
-        for epoch in range(1, args.epochs + 1):
-            train_an_epoch(model, train_iter, training_optimizer, criterion, args)
-            val_loss = evaluate_an_epoch(model, val_iter, criterion, args)
-
-            if not best_valid_loss or val_loss < best_valid_loss:
-                best_valid_loss = val_loss
-
-    except KeyboardInterrupt:
-        print("[Ctrl+C] Training stopped!")
-    val_loss = evaluate_an_epoch(model, test_iter, training_optimizer, criterion, args, metric_label='Test')
+    val_loss = evaluate_an_epoch(model, test_iter, criterion, args, 0)

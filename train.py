@@ -1,6 +1,7 @@
 import argparse
 import time
 import numpy as np
+from simple_chalk import chalk
 from torch.nn import Module
 from torch import max, eq, sum, no_grad
 from torch.nn.utils import clip_grad_norm_
@@ -25,7 +26,8 @@ def train_an_epoch(
         data: Iterator,
         opt: optimizer,
         criterion: loss,
-        args: argparse
+        args: argparse,
+        epoch_num: int
 ):
     model.train()
     correct_predictions, confusion_matrix = 0, np.zeros((args.nlabels, args.nlabels), dtype=int)
@@ -44,16 +46,22 @@ def train_an_epoch(
         clip_grad_norm_(model.parameters(), args.clip)
         opt.step()
 
-        print("[Batch]: {}/{} in {:.5f} seconds".format(
-            batch_num, len(data), time.time() - t), end='\r', flush=True)
-        t = time.time()
+    epoch_loss, epoch_acc = total_loss / len(data), correct_predictions / len(data.dataset) * 100
+    time_elapsed = time.time() - t
 
-    print()
-    print("[Loss]: {:.5f}".format(total_loss / len(data)))
-    print("[Accuracy]: {}/{} : {:.3f}%".format(correct_predictions, len(data.dataset),
-                                               correct_predictions / len(data.dataset) * 100))
-    print(confusion_matrix)
-    return total_loss / len(data)
+    print(f'{chalk.bold("TRAINING --->")} '
+          f'{chalk.bold.greenBright("[EPOCH-{}]".format(epoch_num))} '
+          f'{chalk.bold("TIME ELAPSED:")} {"{:.2f}s".format(time_elapsed)} '
+          f'{chalk.bold.redBright("LOSS:")} {"{:.5f}".format(epoch_loss)} '
+          f'{chalk.bold.yellowBright("ACC:")} {"{:.2f}".format(epoch_acc)}')
+
+    return {
+        "epoch_num": epoch_num,
+        "epoch_loss:": epoch_loss,
+        "epoch_acc": epoch_acc,
+        "time_elapsed": time_elapsed,
+        "confusion_matrix": confusion_matrix
+    }
 
 
 def evaluate_an_epoch(
@@ -61,7 +69,7 @@ def evaluate_an_epoch(
         data: Iterator,
         criterion: loss,
         args: argparse,
-        metric_label='Validation'
+        epoch_num: int = 1
 ):
     model.eval()
     correct_predictions, confusion_matrix = 0, np.zeros((args.nlabels, args.nlabels), dtype=int)
@@ -75,14 +83,20 @@ def evaluate_an_epoch(
             logit, _ = model(x)
             total_loss += float(criterion(logit.view(-1, args.nlabels), y))
             correct_predictions, confusion_matrix = update_stats(correct_predictions, confusion_matrix, logit, y)
-            print("[Batch]: {}/{} in {:.5f} seconds".format(
-                batch_num, len(data), time.time() - t), end='\r', flush=True)
-            t = time.time()
 
-    print()
-    print("[{} loss]: {:.5f}".format(metric_label, total_loss / len(data)))
-    print("[{} accuracy]: {}/{} : {:.3f}%".format(metric_label,
-                                                  correct_predictions, len(data.dataset),
-                                                  correct_predictions / len(data.dataset) * 100))
-    print(confusion_matrix)
-    return total_loss / len(data)
+    epoch_loss, epoch_acc = total_loss / len(data), correct_predictions / len(data.dataset) * 100
+    time_elapsed = time.time() - t
+
+    print(f'{chalk.bold("VALIDATION: --->")} '
+          f'{chalk.bold.greenBright("[EPOCH-{}]".format(epoch_num))} '
+          f'{chalk.bold("TIME ELAPSED:")} {"{:.2f}s".format(time_elapsed)} '
+          f'{chalk.bold.redBright("LOSS:")} {"{:.5f}".format(epoch_loss)} '
+          f'{chalk.bold.yellowBright("ACC:")} {"{:.2f}".format(epoch_acc)}')
+
+    return {
+        "epoch_num": epoch_num,
+        "epoch_loss:": epoch_loss,
+        "epoch_acc": epoch_acc,
+        "time_elapsed": time_elapsed,
+        "confusion_matrix": confusion_matrix
+    }
