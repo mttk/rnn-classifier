@@ -40,7 +40,7 @@ def train_an_epoch(
 
         logit, _ = model(x)
         curr_loss = criterion(logit.view(-1, args.nlabels), y)
-        total_loss += curr_loss
+        total_loss += float(curr_loss)
         correct_predictions, confusion_matrix = update_stats(correct_predictions, confusion_matrix, logit, y)
         curr_loss.backward()
         clip_grad_norm_(model.parameters(), args.clip)
@@ -57,7 +57,7 @@ def train_an_epoch(
 
     return {
         "epoch_num": epoch_num,
-        "epoch_loss:": epoch_loss.item(),
+        "epoch_loss:": epoch_loss,
         "epoch_acc": epoch_acc,
         "time_elapsed": time_elapsed,
         "confusion_matrix": confusion_matrix.tolist()
@@ -95,7 +95,7 @@ def evaluate_an_epoch(
 
     return {
         "epoch_num": epoch_num,
-        "epoch_loss": epoch_loss.item(),
+        "epoch_loss": epoch_loss,
         "epoch_acc": epoch_acc,
         "time_elapsed": time_elapsed,
         "confusion_matrix": confusion_matrix.tolist()
