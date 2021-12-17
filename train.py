@@ -1,9 +1,14 @@
 import argparse
+from simple_chalk import chalk
 import os, sys
 import time
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import Module
+from torch.nn.modules import loss
+from torch.optim import optimizer
+from torchtext.legacy.data.iterator import Iterator
 
 from datasets import dataset_map
 from model import *
@@ -60,7 +65,13 @@ def update_stats(accuracy, confusion_matrix, logits, y):
     return accuracy + correct, confusion_matrix
 
 
-def train(model, data, optimizer, criterion, args):
+def train(
+        model: Module,
+        data: Iterator,
+        opt: optimizer,
+        criterion: loss,
+        args: argparse
+):
     model.train()
     accuracy, confusion_matrix = 0, np.zeros((args.nlabels, args.nlabels), dtype=int)
     t = time.time()
@@ -71,12 +82,12 @@ def train(model, data, optimizer, criterion, args):
         y = batch.label
 
         logit, _ = model(x)
-        loss = criterion(logit.view(-1, args.nlabels), y)
-        total_loss += loss
+        curr_loss = criterion(logit.view(-1, args.nlabels), y)
+        total_loss += curr_loss
         accuracy, confusion_matrix = update_stats(accuracy, confusion_matrix, logit, y)
-        loss.backward()
+        curr_loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
-        optimizer.step()
+        opt.step()
 
         print("[Batch]: {}/{} in {:.5f} seconds".format(
             batch_num, len(data), time.time() - t), end='\r', flush=True)
@@ -84,13 +95,18 @@ def train(model, data, optimizer, criterion, args):
 
     print()
     print("[Loss]: {:.5f}".format(total_loss / len(data)))
-    print("[Accuracy]: {}/{} : {:.3f}%".format(
-        accuracy, len(data.dataset), accuracy / len(data.dataset) * 100))
+    print("[Accuracy]: {}/{} : {:.3f}%".format(accuracy, len(data.dataset), accuracy / len(data.dataset) * 100))
     print(confusion_matrix)
     return total_loss / len(data)
 
 
-def evaluate(model, data, optimizer, criterion, args, type='Valid'):
+def evaluate(
+        model: Module,
+        data: Iterator,
+        criterion: loss,
+        args: argparse,
+        metric_label='Valid'
+):
     model.eval()
     accuracy, confusion_matrix = 0, np.zeros((args.nlabels, args.nlabels), dtype=int)
     t = time.time()
@@ -100,16 +116,16 @@ def evaluate(model, data, optimizer, criterion, args, type='Valid'):
             x, lens = batch.text
             y = batch.label
 
-            logits, _ = model(x)
-            total_loss += float(criterion(logits.view(-1, args.nlabels), y))
-            accuracy, confusion_matrix = update_stats(accuracy, confusion_matrix, logits, y)
+            logit, _ = model(x)
+            total_loss += float(criterion(logit.view(-1, args.nlabels), y))
+            accuracy, confusion_matrix = update_stats(accuracy, confusion_matrix, logit, y)
             print("[Batch]: {}/{} in {:.5f} seconds".format(
                 batch_num, len(data), time.time() - t), end='\r', flush=True)
             t = time.time()
 
     print()
-    print("[{} loss]: {:.5f}".format(type, total_loss / len(data)))
-    print("[{} accuracy]: {}/{} : {:.3f}%".format(type,
+    print("[{} loss]: {:.5f}".format(metric_label, total_loss / len(data)))
+    print("[{} accuracy]: {}/{} : {:.3f}%".format(metric_label,
                                                   accuracy, len(data.dataset), accuracy / len(data.dataset) * 100))
     print(confusion_matrix)
     return total_loss / len(data)
@@ -129,57 +145,67 @@ def load_pretrained_vectors(dim):
 
 
 def main():
+    # Accept CLI arguments.
     args = make_parser().parse_args()
-    print("[Model hyperparams]: {}".format(str(args)))
+    print(f'{chalk.bold(chalk.greenBright("[Model Hyper-parameters]:"))} {"{}".format(str(args))}')
 
+    # Decide the platform to run.
     cuda = torch.cuda.is_available() and args.cuda
     device = torch.device("cpu") if not cuda else torch.device("cuda:0")
     seed_everything(seed=1337, cuda=cuda)
     vectors = load_pretrained_vectors(args.emsize)
 
     # Load dataset iterators
-    iters, TEXT, LABEL = dataset_map[args.data](args.batch_size, device=device, vectors=vectors)
+    data_iter, text_field, label_field = dataset_map[args.data](args.batch_size, device=device, vectors=vectors)
 
     # Some datasets just have the train & test sets, so we just pretend test is valid
-    if len(iters) == 3:
-        train_iter, val_iter, test_iter = iters
+    if len(data_iter) == 3:
+        train_iter, val_iter, test_iter = data_iter
     else:
-        train_iter, test_iter = iters
-        val_iter = test_iter
+        train_iter, val_iter = data_iter
+        test_iter = val_iter
 
-    print("[Corpus]: train: {}, test: {}, vocab: {}, labels: {}".format(
-        len(train_iter.dataset), len(test_iter.dataset), len(TEXT.vocab), len(LABEL.vocab)))
+    print(f'{chalk.bold(chalk.yellowBright("[Corpus]:"))} '
+          f'{"train: {}, test: {}, vocab: {}, labels: {}".format(len(train_iter.dataset), len(test_iter.dataset), len(text_field.vocab), len(label_field.vocab))}')
 
-    ntokens, nlabels = len(TEXT.vocab), len(LABEL.vocab)
-    args.nlabels = nlabels  # hack to not clutter function arguments
+    num_tokens, num_labels = len(text_field.vocab), len(label_field.vocab)
+    args.nlabels = num_labels  # hack to not clutter function arguments
 
-    embedding = nn.Embedding(ntokens, args.emsize, padding_idx=1, max_norm=1)
-    if vectors: embedding.weight.data.copy_(TEXT.vocab.vectors)
-    encoder = Encoder(args.emsize, args.hidden, nlayers=args.nlayers,
-                      dropout=args.drop, bidirectional=args.bi, rnn_type=args.model)
+    embedding = nn.Embedding(num_tokens, args.emsize, padding_idx=1, max_norm=1)
+    if vectors:
+        embedding.weight.data.copy_(text_field.vocab.vectors)
+
+    encoder = Encoder(
+        args.emsize,
+        args.hidden,
+        nlayers=args.nlayers,
+        dropout=args.drop,
+        bidirectional=args.bi,
+        rnn_type=args.model
+    )
 
     attention_dim = args.hidden if not args.bi else 2 * args.hidden
     attention = Attention(attention_dim, attention_dim, attention_dim)
 
-    model = Classifier(embedding, encoder, attention, attention_dim, nlabels)
+    model = Classifier(embedding, encoder, attention, attention_dim, num_labels)
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), args.lr, amsgrad=True)
+    training_optimizer = torch.optim.Adam(model.parameters(), args.lr, amsgrad=True)
 
     try:
         best_valid_loss = None
 
         for epoch in range(1, args.epochs + 1):
-            train(model, train_iter, optimizer, criterion, args)
-            loss = evaluate(model, val_iter, optimizer, criterion, args)
+            train(model, train_iter, training_optimizer, criterion, args)
+            val_loss = evaluate(model, val_iter, criterion, args)
 
-            if not best_valid_loss or loss < best_valid_loss:
-                best_valid_loss = loss
+            if not best_valid_loss or val_loss < best_valid_loss:
+                best_valid_loss = val_loss
 
     except KeyboardInterrupt:
         print("[Ctrl+C] Training stopped!")
-    loss = evaluate(model, test_iter, optimizer, criterion, args, type='Test')
+    val_loss = evaluate(model, test_iter, training_optimizer, criterion, args, metric_label='Test')
 
 
 if __name__ == '__main__':
