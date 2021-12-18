@@ -54,7 +54,7 @@ def make_parser():
     parser.add_argument('--data', type=str, default='IMDB',
                         help='Data corpus: [SST, TREC, IMDB]')
     parser.add_argument('--model', type=str, default='LSTM',
-                        help='type of recurrent net [LSTM, GRU]')
+                        help='type of recurrent net [LSTM, GRU, RNN]')
     parser.add_argument('--emsize', type=int, default=300,
                         help='size of word embeddings [Uses pretrained on 50, 100, 200, 300]')
     parser.add_argument('--hidden', type=int, default=500,
