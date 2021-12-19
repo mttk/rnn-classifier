@@ -8,6 +8,7 @@ Currently there are three available datasets:
 1. SST
 2. IMDB
 3. TREC
+4.
 
 All of the above three datasets are available from
 `torchtext.datasets`.
@@ -21,10 +22,11 @@ things.
 """
 
 from torchtext.legacy import data
+from torchtext.legacy.data.iterator import Iterator
 from torchtext.legacy import datasets
 from torch import device
 from torchtext.legacy.data import Field
-from typing import Callable, Tuple, Dict, Any
+from typing import Callable, Tuple, Dict, Any, List
 
 dataset_func = Callable[[int, device, str, Any], Tuple[Tuple, Field, Field]]
 
@@ -85,6 +87,11 @@ def make_trec(
         (train, test), batch_size=batch_size, device=operating_device, repeat=False)
 
     return (train_iter, test_iter), text_field, label_field
+
+
+def mean_sentence_length(text_iter: Iterator) -> float:
+    len_list: List[int] = list(map(lambda item: len(item.text), text_iter.data()))
+    return sum(len_list) / len(len_list)
 
 
 dataset_map: Dict[str, dataset_func] = {

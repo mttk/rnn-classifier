@@ -5,7 +5,7 @@ from model import *
 from train import *
 import os
 import json
-from datasets import dataset_map
+from datasets import dataset_map, mean_sentence_length
 
 pretrained_GloVe_sizes = [50, 100, 200, 300]
 
@@ -107,6 +107,9 @@ if __name__ == "__main__":
     else:
         train_iter, val_iter = data_iter
         test_iter = val_iter
+
+    print(f"{chalk.bold.yellowBright('MEAN SENTENCE LENGTH(# of words):')} "
+          f"{'{:.2f}'.format(mean_sentence_length(train_iter))}")
 
     print(f'{chalk.bold(chalk.yellowBright("[Corpus]:"))} '
           f'{"train: {}, test: {}, vocab: {}, labels: {}".format(len(train_iter.dataset), len(test_iter.dataset), len(text_field.vocab), len(label_field.vocab))}')
