@@ -121,7 +121,7 @@ if __name__ == "__main__":
     encoder = Encoder(
         args.emsize,
         args.hidden,
-        nlayers=args.nlayers,
+        num_layers=args.nlayers,
         dropout=args.drop,
         bidirectional=args.bi,
         rnn_type=args.model
