@@ -102,6 +102,7 @@ def make_yelp(
     test_dataset_raw = pd.read_csv(dataset_path / 'test.csv')
     train_dataset_raw = train_dataset_raw.sample(frac = 1)
     train_dataset_raw = train_dataset_raw[:150000]
+    train_dataset_raw.to_csv("./train.csv", index = False)
 
 
 
