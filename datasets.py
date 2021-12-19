@@ -21,6 +21,8 @@ things.
 
 """
 
+import pandas as pd
+from pathlib import Path
 from torchtext.legacy import data
 from torchtext.legacy.data.iterator import Iterator
 from torchtext.legacy import datasets
@@ -89,6 +91,48 @@ def make_trec(
     return (train_iter, test_iter), text_field, label_field
 
 
+def make_yelp(
+        batch_size,
+        operating_device=-1,
+        vectors=None,
+):
+    dataset_path = Path('./yelp_review_polarity_csv')
+    # Append labels to the dataset.
+    train_dataset_raw = pd.read_csv(dataset_path / 'train.csv')
+    test_dataset_raw = pd.read_csv(dataset_path / 'test.csv')
+    train_dataset_raw.columns = ['label', 'text']
+    test_dataset_raw.columns = ['label', 'text']
+    train_dataset_raw.to_csv(dataset_path / 'train_labeled.csv', index=False)
+    test_dataset_raw.to_csv(dataset_path / 'test_labeled.csv', index=False)
+
+    # Start processing.
+    text_field = Field(
+        include_lengths=True,
+        lower=True
+    )
+    label_field = data.LabelField()
+
+    train_obj, test_obj = data.TabularDataset.splits(
+        path=str(dataset_path),
+        train='train.csv',
+        test='test.csv',
+        format='csv',
+        fields=[('label', label_field), ('text', text_field)]
+    )
+
+    text_field.build_vocab(train_obj, test_obj, vectors=vectors)
+    label_field.build_vocab(train_obj, test_obj)
+
+    train_iter, test_iter = data.BucketIterator.splits(
+        (train_obj, test_obj),
+        batch_size=batch_size,
+        device=operating_device,
+        repeat=False
+    )
+
+    return (train_iter, test_iter), text_field, label_field
+
+
 def mean_sentence_length(text_iter: Iterator) -> float:
     len_list: List[int] = list(map(lambda item: len(item.text), text_iter.data()))
     return sum(len_list) / len(len_list)
@@ -97,5 +141,6 @@ def mean_sentence_length(text_iter: Iterator) -> float:
 dataset_map: Dict[str, dataset_func] = {
     'SST': make_sst,
     'IMDB': make_imdb,
-    'TREC': make_trec
+    'TREC': make_trec,
+    "YELP": make_yelp
 }

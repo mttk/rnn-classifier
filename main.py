@@ -51,8 +51,8 @@ def save_state(
 
 def make_parser():
     parser = argparse.ArgumentParser(description='PyTorch RNN Classifier w/ attention')
-    parser.add_argument('--data', type=str, default='IMDB',
-                        help='Data corpus: [SST, TREC, IMDB]')
+    parser.add_argument('--data', type=str, default='YELP',
+                        help='Data corpus: [SST, TREC, IMDB, YELP]')
     parser.add_argument('--model', type=str, default='LSTM',
                         help='type of recurrent net [LSTM, GRU, RNN]')
     parser.add_argument('--emsize', type=int, default=300,
