@@ -100,6 +100,11 @@ def make_yelp(
     # Append labels to the dataset.
     train_dataset_raw = pd.read_csv(dataset_path / 'train.csv')
     test_dataset_raw = pd.read_csv(dataset_path / 'test.csv')
+    train_dataset_raw = train_dataset_raw.sample(frac = 1)
+    train_dataset_raw = train_dataset_raw[:150000]
+
+
+
     train_dataset_raw.columns = ['label', 'text']
     test_dataset_raw.columns = ['label', 'text']
     train_dataset_raw.to_csv(dataset_path / 'train_labeled.csv', index=False)
