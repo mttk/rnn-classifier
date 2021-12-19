@@ -102,9 +102,6 @@ def make_yelp(
     test_dataset_raw = pd.read_csv(dataset_path / 'test.csv')
     train_dataset_raw = train_dataset_raw.sample(frac = 1)
     train_dataset_raw = train_dataset_raw[:150000]
-    train_dataset_raw.to_csv("./train.csv", index = False)
-
-
 
     train_dataset_raw.columns = ['label', 'text']
     test_dataset_raw.columns = ['label', 'text']
@@ -133,7 +130,8 @@ def make_yelp(
         (train_obj, test_obj),
         batch_size=batch_size,
         device=operating_device,
-        repeat=False
+        repeat=False,
+        sort=False
     )
 
     return (train_iter, test_iter), text_field, label_field
