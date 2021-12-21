@@ -86,7 +86,8 @@ class Classifier(nn.Module):
         # Other options (work worse on a few tests):
         # linear_combination, _ = torch.max(outputs, 0)
         # linear_combination = torch.mean(outputs, 0)
-
+        # energy = 0
         energy, linear_combination = self.attention(hidden, outputs, outputs)
         logit = self.decoder(linear_combination)
+        # logit = self.decoder(hidden)
         return logit, energy
